@@ -5,14 +5,21 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 require('dotenv').config();
-const serverless = require('serverless-http'); // ✅ pentru Vercel
 
 const app = express();
 
-// ✅ CORS pentru frontend-ul tău
+// ✅ CORS — varianta recomandată, compatibilă Vercel
+const allowedOrigins = ['https://tiply-qog1.vercel.app'];
+
 app.use(cors({
-  origin: 'https://tiply-qog1.vercel.app',
-  methods: ['GET', 'POST'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
 }));
 
@@ -31,7 +38,7 @@ async function connectDB() {
   isConnected = true;
 }
 
-// --- API: Înregistrare
+// --- REGISTER
 app.post('/api/register', async (req, res) => {
   await connectDB();
 
@@ -50,7 +57,7 @@ app.post('/api/register', async (req, res) => {
   res.status(201).json({ message: 'Utilizator înregistrat cu succes' });
 });
 
-// --- API: Autentificare
+// --- LOGIN
 app.post('/api/login', async (req, res) => {
   await connectDB();
 
@@ -70,10 +77,10 @@ app.post('/api/login', async (req, res) => {
   res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
 });
 
-// Test
-app.get('/api', (req, res) => {
+// --- Test route
+app.get('/', (req, res) => {
   res.send('✅ Backend funcționează pe Vercel');
 });
 
-// ✅ Export corect pentru Vercel
-module.exports.handler = serverless(app);
+// ✅ Vercel export
+module.exports = app;

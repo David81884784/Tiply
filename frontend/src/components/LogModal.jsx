@@ -1,56 +1,70 @@
 import React, { useState } from 'react';
 
 export default function LogModal({ isOpen, onClose }) {
-  const BASE_URL = 'https://tiply-api.vercel.app/api';
+  const BASE_URL = 'https://tiply-flame.vercel.app/api';
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [parola, setParola] = useState('');
   const [nume, setNume] = useState('');
   const [confirmParola, setConfirmParola] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const response = await fetch(`${BASE_URL}/login`, {
+    try {
+      const response = await fetch(`${BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, parola }),
+      });
 
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, parola }),
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      localStorage.setItem('token', data.token);
-      alert('Autentificat cu succes!');
-      onClose();
-      window.location.href = '/';
-    } else {
-      alert(data.message || 'Eroare la autentificare');
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        alert('Autentificat cu succes!');
+        onClose();
+        window.location.reload();
+      } else {
+        alert(data.message || 'Eroare la autentificare');
+      }
+    } catch (err) {
+      alert('A apărut o eroare. Încearcă din nou.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     if (parola !== confirmParola) {
       alert('Parolele nu coincid.');
+      setLoading(false);
       return;
     }
 
-    const response = await fetch(`${BASE_URL}/register`, {
+    try {
+      const response = await fetch(`${BASE_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nume, email, parola }),
+      });
 
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nume, email, parola }),
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      alert('Înregistrare reușită! Poți să te autentifici acum.');
-      setIsLogin(true);
-    } else {
-      alert(data.message || 'Eroare la înregistrare');
+      const data = await response.json();
+      if (response.ok) {
+        alert('Înregistrare reușită! Poți să te autentifici acum.');
+        setIsLogin(true);
+      } else {
+        alert(data.message || 'Eroare la înregistrare');
+      }
+    } catch (err) {
+      alert('A apărut o eroare. Încearcă din nou.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,7 +73,6 @@ export default function LogModal({ isOpen, onClose }) {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="relative w-full max-w-lg mx-auto bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl p-8">
-
             <h3 className="text-2xl font-bold mb-4 text-center bg-gradient-to-r from-cyan-400 to-purple-500 text-transparent bg-clip-text">
               {isLogin ? 'Autentificare' : 'Înregistrare'}
             </h3>
@@ -70,7 +83,10 @@ export default function LogModal({ isOpen, onClose }) {
                 : 'Creează un cont nou pentru a începe să folosești platforma.'}
             </p>
 
-            <form className="space-y-4" onSubmit={(e) => isLogin ? handleLogin(e) : handleRegister(e)}>
+            <form
+              className="space-y-4"
+              onSubmit={(e) => (isLogin ? handleLogin(e) : handleRegister(e))}
+            >
               {!isLogin && (
                 <input
                   type="text"
@@ -78,6 +94,7 @@ export default function LogModal({ isOpen, onClose }) {
                   value={nume}
                   onChange={(e) => setNume(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
                 />
               )}
               <input
@@ -86,6 +103,7 @@ export default function LogModal({ isOpen, onClose }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
               />
               <input
                 type="password"
@@ -93,6 +111,7 @@ export default function LogModal({ isOpen, onClose }) {
                 value={parola}
                 onChange={(e) => setParola(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
               />
               {!isLogin && (
                 <input
@@ -101,14 +120,22 @@ export default function LogModal({ isOpen, onClose }) {
                   value={confirmParola}
                   onChange={(e) => setConfirmParola(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
                 />
               )}
 
               <button
                 type="submit"
-                className="w-full mt-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 px-6 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition duration-300"
+                disabled={loading}
+                className="w-full mt-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 px-6 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition duration-300 disabled:opacity-50"
               >
-                {isLogin ? 'Autentificare' : 'Creează cont'}
+                {loading
+                  ? isLogin
+                    ? 'Se autentifică...'
+                    : 'Se înregistrează...'
+                  : isLogin
+                  ? 'Autentificare'
+                  : 'Creează cont'}
               </button>
             </form>
 

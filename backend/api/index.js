@@ -3,13 +3,14 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const serverless = require('serverless-http'); // ✅ OBLIGATORIU pentru Vercel
 const User = require('../models/User');
 require('dotenv').config();
 
 const app = express();
 
-// ✅ CORS — varianta recomandată, compatibilă Vercel
-const allowedOrigins = ['https://tiply-qog1.vercel.app'];
+// ✅ CORS fix pentru frontend-ul de pe Vercel
+const allowedOrigins = ['https://tiply-flame.vercel.app'];
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -26,7 +27,7 @@ app.use(cors({
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test';
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGO_URI;
 
 let isConnected = false;
 async function connectDB() {
@@ -38,7 +39,6 @@ async function connectDB() {
   isConnected = true;
 }
 
-// --- REGISTER
 app.post('/api/register', async (req, res) => {
   await connectDB();
 
@@ -57,7 +57,6 @@ app.post('/api/register', async (req, res) => {
   res.status(201).json({ message: 'Utilizator înregistrat cu succes' });
 });
 
-// --- LOGIN
 app.post('/api/login', async (req, res) => {
   await connectDB();
 
@@ -77,10 +76,9 @@ app.post('/api/login', async (req, res) => {
   res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
 });
 
-// --- Test route
 app.get('/', (req, res) => {
   res.send('✅ Backend funcționează pe Vercel');
 });
 
-// ✅ Vercel export
-module.exports = app;
+// ✅ Export corect pentru Vercel
+module.exports = serverless(app);

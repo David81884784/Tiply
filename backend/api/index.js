@@ -7,7 +7,14 @@ const User = require('../models/User');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// ✅ CORS configurat pentru frontendul tău Vercel
+app.use(cors({
+  origin: 'https://tiply-qog1.vercel.app',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test';
@@ -23,7 +30,7 @@ async function connectDB() {
   isConnected = true;
 }
 
-// --- API routes
+// --- API: Înregistrare
 app.post('/api/register', async (req, res) => {
   await connectDB();
 
@@ -42,6 +49,7 @@ app.post('/api/register', async (req, res) => {
   res.status(201).json({ message: 'Utilizator înregistrat cu succes' });
 });
 
+// --- API: Autentificare
 app.post('/api/login', async (req, res) => {
   await connectDB();
 
@@ -61,8 +69,10 @@ app.post('/api/login', async (req, res) => {
   res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
 });
 
+// Test route
 app.get('/', (req, res) => {
   res.send('✅ Backend funcționează pe Vercel');
 });
 
+// Exportă pentru Vercel
 module.exports = app;

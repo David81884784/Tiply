@@ -5,10 +5,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 require('dotenv').config();
+const serverless = require('serverless-http'); // ✅ pentru Vercel
 
 const app = express();
 
-// ✅ CORS configurat pentru frontendul tău Vercel
+// ✅ CORS pentru frontend-ul tău
 app.use(cors({
   origin: 'https://tiply-qog1.vercel.app',
   methods: ['GET', 'POST'],
@@ -69,10 +70,10 @@ app.post('/api/login', async (req, res) => {
   res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
 });
 
-// Test route
-app.get('/', (req, res) => {
+// Test
+app.get('/api', (req, res) => {
   res.send('✅ Backend funcționează pe Vercel');
 });
 
-// Exportă pentru Vercel
-module.exports = app;
+// ✅ Export corect pentru Vercel
+module.exports.handler = serverless(app);

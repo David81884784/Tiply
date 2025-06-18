@@ -9,11 +9,10 @@ const authRoutes = require('../routes/auth');
 const app = express();
 
 const allowedOrigins = [
-  'https://tiply-flame.vercel.app',
-  'https://tiply-qog1.vercel.app'
+  'https://tiply-qog1.vercel.app',
+  'https://tiply-flame.vercel.app'
 ];
 
-// ✅ CORS trebuie aplicat global și corect
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -22,19 +21,16 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'OPTIONS'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS']
 };
 
+// ✅ important: asta trebuie să vină PRIMA!
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // pentru preflight
 
-// ✅ Răspuns la preflight requests (OPTIONS)
-app.options('*', cors(corsOptions));
-
-// JSON parser
 app.use(express.json());
 
-// ✅ Mongo connect o singură dată
 let isConnected = false;
 async function connectDB() {
   if (isConnected) return;
@@ -45,14 +41,11 @@ async function connectDB() {
   isConnected = true;
 }
 
-// Middleware de conexiune Mongo
 app.use(async (req, res, next) => {
   await connectDB();
   next();
 });
 
-// Rutele API
 app.use('/api', authRoutes);
 
-// Export pentru Vercel
 module.exports = serverless(app);

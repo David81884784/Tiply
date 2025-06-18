@@ -30,7 +30,7 @@ export default function LogModal({ isOpen, onClose }) {
       } else {
         alert(data.message || 'Eroare la autentificare');
       }
-    } catch (err) {
+    } catch {
       alert('A apărut o eroare. Încearcă din nou.');
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export default function LogModal({ isOpen, onClose }) {
       } else {
         alert(data.message || 'Eroare la înregistrare');
       }
-    } catch (err) {
+    } catch {
       alert('A apărut o eroare. Încearcă din nou.');
     } finally {
       setLoading(false);

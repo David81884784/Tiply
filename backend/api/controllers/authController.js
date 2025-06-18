@@ -1,4 +1,3 @@
-// backend/controllers/authController.js
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -11,14 +10,13 @@ exports.register = async (req, res) => {
     if (existingUser) return res.status(400).json({ message: 'Email deja folosit' });
 
     const hashedPassword = await bcrypt.hash(parola, 10);
-    const newUser = new User({ nume, email, parola: hashedPassword });
+    const newUser = new User({ username: nume, email, password: hashedPassword });
 
     await newUser.save();
 
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ message: 'Cont creat cu succes!', token });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Eroare la înregistrare' });
   }
 };
@@ -30,20 +28,19 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Email sau parolă greșită' });
 
-    const isMatch = await bcrypt.compare(parola, user.parola);
+    const isMatch = await bcrypt.compare(parola, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Email sau parolă greșită' });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ message: 'Autentificat cu succes!', token });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Eroare la autentificare' });
   }
 };
 
 exports.getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-parola');
+    const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: 'Utilizatorul nu a fost găsit' });
 
     res.json(user);

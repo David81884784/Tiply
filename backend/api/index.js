@@ -8,7 +8,10 @@ const authRoutes = require('../routes/auth');
 
 const app = express();
 
-const allowedOrigins = ['https://tiply-flame.vercel.app'];
+const allowedOrigins = [
+  'https://tiply-flame.vercel.app',
+  'https://tiply-qog1.vercel.app'
+];
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -39,6 +42,6 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.use('/', authRoutes);
+app.use('/api', authRoutes);
 
 module.exports = serverless(app);

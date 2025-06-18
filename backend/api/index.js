@@ -1,13 +1,14 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const serverless = require('serverless-http');
-require('dotenv').config();
+// /api/index.js
 
-const authRoutes = require('../routes/auth');
+import express from 'express';
+import serverless from 'serverless-http';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import authRoutes from '../routes/auth.js'; // Ajustează dacă e alt path
 
 const app = express();
 
+// CORS
 const allowedOrigins = [
   'https://tiply-qog1.vercel.app',
   'https://tiply-flame.vercel.app'
@@ -25,18 +26,16 @@ const corsOptions = {
   methods: ['GET', 'POST', 'OPTIONS']
 };
 
-// ✅ important: asta trebuie să vină PRIMA!
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // pentru preflight
-
 app.use(express.json());
 
+// MongoDB connection
 let isConnected = false;
 async function connectDB() {
   if (isConnected) return;
   await mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useUnifiedTopology: true
   });
   isConnected = true;
 }
@@ -46,6 +45,8 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.use('/api', authRoutes);
+// Rutele
+app.use('/', authRoutes);
 
-module.exports = serverless(app);
+// Export Express as serverless function
+export default serverless(app);

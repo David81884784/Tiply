@@ -13,35 +13,31 @@ export default function LogModal({ isOpen, onClose }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
-      const res = await fetch('https://tiply-flame.vercel.app/api/index', {
+      const response = await fetch(`${BASE_URL}/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password: parola // trimitem parola corect
-        })
+        body: JSON.stringify({ email, parola }),
       });
-  
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem('token', data.token || 'demo-token');
+
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
         alert('Autentificat cu succes!');
         onClose();
         window.location.reload();
       } else {
         alert(data.message || 'Eroare la autentificare');
       }
-    } catch (err) {
+    } catch {
       alert('A apărut o eroare. Încearcă din nou.');
     } finally {
       setLoading(false);
     }
   };
-  
 
   const handleRegister = async (e) => {
     e.preventDefault();

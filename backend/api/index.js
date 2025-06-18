@@ -6,18 +6,13 @@ require('dotenv').config();
 
 const app = express();
 
-// ✅ CORS fix - permite cereri de la frontendul tău
-app.use(cors({
-  origin: '*', // temporar pentru testare, vezi mai jos explicația
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// 🔓 CORS complet deschis - acceptă cereri de la ORICE origine
+app.use(cors()); // <–– fără nicio opțiune, permite tot
 
-
-// ✅ Body parser
+// Body parser
 app.use(express.json());
 
-// ✅ MongoDB connection
+// Conectare MongoDB
 const MONGO_URI = process.env.MONGO_URI;
 if (!mongoose.connection.readyState) {
   mongoose.connect(MONGO_URI, {
@@ -28,11 +23,11 @@ if (!mongoose.connection.readyState) {
   .catch((err) => console.error('❌ MongoDB error:', err));
 }
 
-// ✅ Routes
+// Rute
 const authRoutes = require('../routes/auth');
 app.use('/api', authRoutes);
 
-// ✅ Test route
+// Rută de test
 app.get('/api', (req, res) => {
   res.json({ message: 'API funcționează!' });
 });

@@ -8,10 +8,11 @@ const app = express();
 
 // ✅ CORS fix - permite cereri de la frontendul tău
 app.use(cors({
-  origin: 'https://frontend-4tx2aatj2-davids-projects-a9354ccb.vercel.app', // ← aici poți pune "*" doar temporar
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: '*', // temporar pentru testare, vezi mai jos explicația
+  methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 
 // ✅ Body parser
 app.use(express.json());

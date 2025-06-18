@@ -1,51 +1,38 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
 const serverless = require('serverless-http');
+const cors = require('cors');
+const mongoose = require('mongoose');
 require('dotenv').config();
-
-const authRoutes = require('../routes/auth');
 
 const app = express();
 
-const allowedOrigins = [
-  'https://tiply-qog1.vercel.app',
-  'https://tiply-flame.vercel.app'
-];
+// ✅ CORS fix (acceptă orice origin)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS']
-};
-
-// ✅ important: asta trebuie să vină PRIMA!
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // pentru preflight
-
+// ✅ Body parser
 app.use(express.json());
 
-let isConnected = false;
-async function connectDB() {
-  if (isConnected) return;
-  await mongoose.connect(process.env.MONGO_URI, {
+// ✅ MongoDB connect
+const MONGO_URI = process.env.MONGO_URI;
+if (!mongoose.connection.readyState) {
+  mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  });
-  isConnected = true;
+  }).then(() => console.log('MongoDB connected'))
+    .catch((err) => console.error('MongoDB error:', err));
 }
 
-app.use(async (req, res, next) => {
-  await connectDB();
-  next();
-});
-
+// ✅ Routes
+const authRoutes = require('../routes/auth');
 app.use('/api', authRoutes);
+
+// ✅ Default route (health check)
+app.get('/api', (req, res) => {
+  res.json({ message: 'API funcționează' });
+});
 
 module.exports = serverless(app);

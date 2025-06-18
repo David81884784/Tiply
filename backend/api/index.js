@@ -6,11 +6,10 @@ require('dotenv').config();
 
 const app = express();
 
-// 🔓 CORS complet deschis - acceptă cereri de la ORICE origine
-app.use(cors()); // <–– fără nicio opțiune, permite tot
+const cors = require('cors');
+// permite cereri de oriunde (temporar)
+app.use(cors());
 
-// Body parser
-app.use(express.json());
 
 // Conectare MongoDB
 const MONGO_URI = process.env.MONGO_URI;
@@ -32,4 +31,5 @@ app.get('/api', (req, res) => {
   res.json({ message: 'API funcționează!' });
 });
 
-module.exports = serverless(app);
+module.exports.handler = serverless(app);
+

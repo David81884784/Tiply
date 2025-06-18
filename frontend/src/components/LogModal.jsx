@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 export default function LogModal({ isOpen, onClose }) {
-  const BASE_URL = 'https://tiply-flame.vercel.app/api';
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -17,7 +17,9 @@ export default function LogModal({ isOpen, onClose }) {
     try {
       const response = await fetch(`${BASE_URL}/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, parola }),
       });
 

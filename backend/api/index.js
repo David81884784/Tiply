@@ -13,7 +13,8 @@ const allowedOrigins = [
   'https://tiply-qog1.vercel.app'
 ];
 
-app.use(cors({
+// ✅ CORS trebuie aplicat global și corect
+const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -23,10 +24,17 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
-}));
+};
 
+app.use(cors(corsOptions));
+
+// ✅ Răspuns la preflight requests (OPTIONS)
+app.options('*', cors(corsOptions));
+
+// JSON parser
 app.use(express.json());
 
+// ✅ Mongo connect o singură dată
 let isConnected = false;
 async function connectDB() {
   if (isConnected) return;
@@ -37,11 +45,14 @@ async function connectDB() {
   isConnected = true;
 }
 
+// Middleware de conexiune Mongo
 app.use(async (req, res, next) => {
   await connectDB();
   next();
 });
 
+// Rutele API
 app.use('/api', authRoutes);
 
+// Export pentru Vercel
 module.exports = serverless(app);
